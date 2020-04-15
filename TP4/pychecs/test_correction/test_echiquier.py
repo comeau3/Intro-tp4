@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pychecs
+import pytest
 from pychecs.echiquier import Echiquier
 from pychecs.piece import Dame, Roi, Fou, Cavalier, Tour, Pion
-import pytest
 
 
 # Échiquier de test :

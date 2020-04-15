@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import pytest
 import pychecs
+import pytest
 from pychecs.piece import Piece, Dame, Roi, Fou, Cavalier, Tour, Pion
 
 

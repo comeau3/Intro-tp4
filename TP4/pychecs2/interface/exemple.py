@@ -5,7 +5,6 @@ un échiquier dans un Canvas, puis de déterminer quelle case a été sélection
 from tkinter import NSEW, Canvas, Label, Tk
 
 # Exemple d'importation de la classe Partie.
-from pychecs2.echecs.partie import Partie
 
 
 class CanvasEchiquier(Canvas):
