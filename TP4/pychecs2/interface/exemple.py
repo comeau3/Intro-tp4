@@ -4,6 +4,7 @@ un échiquier dans un Canvas, puis de déterminer quelle case a été sélection
 """
 from tkinter import NSEW, Canvas, Label, Tk
 
+
 # Exemple d'importation de la classe Partie.
 
 
@@ -12,6 +13,7 @@ class CanvasEchiquier(Canvas):
     la fenêtre est étirée.
 
     """
+
     def __init__(self, parent, n_pixels_par_case):
         # Nombre de lignes et de colonnes.
         self.n_lignes = 8
@@ -57,6 +59,7 @@ class CanvasEchiquier(Canvas):
                 # On détermine la couleur.
                 if (i + j) % 2 == 0:
                     couleur = 'white'
+
                 else:
                     couleur = 'gray'
 
@@ -84,10 +87,12 @@ class CanvasEchiquier(Canvas):
         for position, piece in self.pieces.items():
             # On dessine la pièce dans le canvas, au centre de la case. On utilise l'attribut "tags" pour être en
             # mesure de récupérer les éléments dans le canvas.
-            coordonnee_y = (self.n_lignes - self.chiffres_rangees.index(position[1]) - 1) * self.n_pixels_par_case + self.n_pixels_par_case // 2
-            coordonnee_x = self.lettres_colonnes.index(position[0]) * self.n_pixels_par_case + self.n_pixels_par_case // 2
+            coordonnee_y = (self.n_lignes - self.chiffres_rangees.index(
+                position[1]) - 1) * self.n_pixels_par_case + self.n_pixels_par_case // 2
+            coordonnee_x = self.lettres_colonnes.index(
+                position[0]) * self.n_pixels_par_case + self.n_pixels_par_case // 2
             self.create_text(coordonnee_x, coordonnee_y, text=caracteres_pieces[piece],
-                             font=('Deja Vu', self.n_pixels_par_case//2), tags='piece')
+                             font=('Deja Vu', self.n_pixels_par_case // 2), tags='piece')
 
     def redimensionner(self, event):
         # Nous recevons dans le "event" la nouvelle dimension dans les attributs width et height. On veut un damier
@@ -122,6 +127,9 @@ class Fenetre(Tk):
 
         # Création du canvas échiquier.
         self.canvas_echiquier = CanvasEchiquier(self, 60)
+        if self.position_selectionnee is not None:
+            CanvasEchiquier.dessiner_cases()
+
         self.canvas_echiquier.grid(sticky=NSEW)
 
         # Ajout d'une étiquette d'information.
@@ -138,15 +146,29 @@ class Fenetre(Tk):
         position = "{}{}".format(self.canvas_echiquier.lettres_colonnes[colonne], int(self.canvas_echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
 
         # On récupère l'information sur la pièce à l'endroit choisi. Notez le try...except!
+
         try:
             piece = self.canvas_echiquier.pieces[position]
 
             # On change la valeur de l'attribut position_selectionnee.
-            self.position_selectionnee = position
 
-            self.messages['foreground'] = 'black'
-            self.messages['text'] = 'Pièce sélectionnée : {} à la position {}.'.format(piece, self.position_selectionnee)
+            # TODO Test position sélectionnee
+            if self.position_selectionnee is None:
+
+                self.position_selectionnee = position
+
+                self.messages['foreground'] = 'black'
+                self.messages['text'] = 'Pièce sélectionnée : {} à la position {}.'.format(piece,
+                                                                                           self.position_selectionnee)
+            elif self.position_selectionnee == position:
+                self.position_selectionnee = None
+                self.messages['text'] = 'Aucune pièce sélectionnée'
+
+
+
+
 
         except KeyError:
             self.messages['foreground'] = 'red'
             self.messages['text'] = 'Erreur: Aucune pièce à cet endroit.'
+            self.position_selectionnee = None
