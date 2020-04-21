@@ -5,6 +5,8 @@
 import pychecs
 from pychecs.piece import Pion, Tour, Fou, Cavalier, Dame, Roi
 
+from pychecs2.echecs.exception import (AucunePieceAPosition, MauvaiseCouleurPiece, ErreurDeplacement)
+
 
 class Echiquier:
     """Classe Echiquier, implémentée avec un dictionnaire de pièces.
@@ -268,12 +270,15 @@ class Echiquier:
             bool: True si le déplacement était valide et a été effectué, et False autrement.
 
         """
+
+
+
         if not self.deplacement_est_valide(position_source, position_cible):
-            return False
+            raise ErreurDeplacement('Déplacement invalide')
 
         self.dictionnaire_pieces[position_cible] = self.dictionnaire_pieces[position_source]
         del self.dictionnaire_pieces[position_source]
-        return True
+
 
     def roi_de_couleur_est_dans_echiquier(self, couleur):
         """Vérifie si un roi de la couleur reçue en argument est présent dans l'échiquier.

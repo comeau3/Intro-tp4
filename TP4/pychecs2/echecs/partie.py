@@ -4,6 +4,7 @@ dont un objet échiquier (une instance de la classe Echiquier).
 
 """
 from pychecs2.echecs.echiquier import Echiquier
+from pychecs2.echecs.exception import (AucunePieceAPosition, MauvaiseCouleurPiece, ErreurDeplacement)
 
 
 class Partie:
@@ -72,6 +73,19 @@ class Partie:
                 return source, cible
 
             print("Déplacement invalide.\n")
+
+    def deplacer(self, position_source, position_cible):
+
+        piece = self.echiquier.recuperer_piece_a_position(position_source)
+        print(piece)
+
+        if piece is None:
+            raise AucunePieceAPosition('Aucune pièce à cet emplacement')
+        elif piece.couleur != self.joueur_actif:
+            raise MauvaiseCouleurPiece("La pièce source n'appartient pas au joueur actif")
+
+        self.echiquier.deplacer(position_source, position_cible)
+        self.joueur_suivant()
 
     def joueur_suivant(self):
         """Change le joueur actif: passe de blanc à noir, ou de noir à blanc, selon la couleur du joueur actif.

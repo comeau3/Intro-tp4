@@ -5,6 +5,8 @@ dont un objet échiquier (une instance de la classe Echiquier).
 """
 from pychecs.echiquier import Echiquier
 
+
+
 class Partie:
     """La classe Partie contient les informations sur une partie d'échecs, c'est à dire un échiquier, puis
     un joueur actif (blanc ou noir). Des méthodes sont disponibles pour faire avancer la partie et interagir
@@ -71,6 +73,19 @@ class Partie:
                 return source, cible
 
             print("Déplacement invalide.\n")
+
+    def deplacer(self, position_source, position_cible):
+
+        piece = self.echiquier.recuperer_piece_a_position(position_source)
+
+        if piece is None:
+            raise AucunePieceAPosition('Aucune pièce à cet emplacement')
+        elif piece.couleur != self.joueur_actif:
+            raise MauvaiseCouleurPiece("La pièce source n'appartient pas au joueur actif")
+
+        self.echiquier.deplacer(position_source, position_cible)
+        self.joueur_suivant()
+
 
     def joueur_suivant(self):
         """Change le joueur actif: passe de blanc à noir, ou de noir à blanc, selon la couleur du joueur actif.
