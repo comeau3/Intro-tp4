@@ -2,11 +2,10 @@
 un échiquier dans un Canvas, puis de déterminer quelle case a été sélectionnée.
 
 """
-from tkinter import NSEW, Canvas, Label, Tk
-from pychecs2.echecs.partie import (Partie)
+from tkinter import NSEW, Canvas, Label, Tk, Menu, PhotoImage
+import webbrowser
 
 # Exemple d'importation de la classe Partie.
-from pychecs2.echecs.exception import (AucunePieceAPosition, MauvaiseCouleurPiece, ErreurDeplacement)
 
 
 class CanvasEchiquier(Canvas):
@@ -15,7 +14,7 @@ class CanvasEchiquier(Canvas):
 
     """
 
-    def __init__(self, parent, n_pixels_par_case, partie):
+    def __init__(self, parent, n_pixels_par_case):
         # Nombre de lignes et de colonnes.
         self.n_lignes = 8
         self.n_colonnes = 8
@@ -23,10 +22,6 @@ class CanvasEchiquier(Canvas):
         # Noms des lignes et des colonnes.
         self.chiffres_rangees = ['1', '2', '3', '4', '5', '6', '7', '8']
         self.lettres_colonnes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-
-        self.position_selectionnee = None
-
-        self.partie = partie
 
         # Nombre de pixels par case, variable.
         self.n_pixels_par_case = n_pixels_par_case
@@ -96,8 +91,10 @@ class CanvasEchiquier(Canvas):
                 position[1]) - 1) * self.n_pixels_par_case + self.n_pixels_par_case // 2
             coordonnee_x = self.lettres_colonnes.index(
                 position[0]) * self.n_pixels_par_case + self.n_pixels_par_case // 2
+
             self.create_text(coordonnee_x, coordonnee_y, text=caracteres_pieces[piece],
                              font=('Deja Vu', self.n_pixels_par_case // 2), tags='piece')
+
 
     def redimensionner(self, event):
         # Nous recevons dans le "event" la nouvelle dimension dans les attributs width et height. On veut un damier
@@ -106,10 +103,8 @@ class CanvasEchiquier(Canvas):
 
         # Calcul de la nouvelle dimension des cases.
         self.n_pixels_par_case = nouvelle_taille // self.n_lignes
-        self.raffraichir()
 
-    def raffraichir(self):
-         # On supprime les anciennes cases et on ajoute les nouvelles.
+        # On supprime les anciennes cases et on ajoute les nouvelles.
         self.delete('case')
         self.dessiner_cases()
 
@@ -118,15 +113,13 @@ class CanvasEchiquier(Canvas):
         self.dessiner_pieces()
 
 
-
 class Fenetre(Tk):
     def __init__(self):
         super().__init__()
-
+        menubar = BarreMenu(self)
+        self.config(menu=menubar)
         # Nom de la fenêtre.
         self.title("Échiquier")
-
-        self.partie = Partie()
 
         # La position sélectionnée.
         self.position_selectionnee = None
@@ -136,7 +129,7 @@ class Fenetre(Tk):
         self.grid_rowconfigure(0, weight=1)
 
         # Création du canvas échiquier.
-        self.canvas_echiquier = CanvasEchiquier(self, 60, self.partie)
+        self.canvas_echiquier = CanvasEchiquier(self, 60)
         if self.position_selectionnee is not None:
             CanvasEchiquier.dessiner_cases()
 
@@ -155,24 +148,67 @@ class Fenetre(Tk):
         colonne = event.x // self.canvas_echiquier.n_pixels_par_case
         position = "{}{}".format(self.canvas_echiquier.lettres_colonnes[colonne], int(self.canvas_echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
 
+        # On récupère l'information sur la pièce à l'endroit choisi. Notez le try...except!
 
         try:
-            if not self.canvas_echiquier.position_selectionnee:
-                print('1er clic')
-                self.canvas_echiquier.position_selectionnee = position
-            else:
-                print('second clic')
-                print(self.canvas_echiquier.position_selectionnee, position)
-                self.partie.deplacer(self.canvas_echiquier.position_selectionnee, position)
-                self.canvas_echiquier.position_selectionnee = None
+            piece = self.canvas_echiquier.pieces[position]
 
-                if self.partie.partie_terminee():
-                    self.messages['foreground'] = "black"
-                    self.messages['text'] = "La partie est terminée" + self.partie.determiner_gagnant()
-        except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
-            self.messages['foreground'] = "red"
-            self.messages['text'] = e
-            self.canvas_echiquier.position_selectionne= None
-        finally:
-            self.canvas_echiquier.raffraichir()
+            # On change la valeur de l'attribut position_selectionnee.
+
+            # TODO Test position sélectionnee
+            if self.position_selectionnee is None:
+
+                self.position_selectionnee = position
+
+                self.messages['foreground'] = 'black'
+                self.messages['text'] = 'Pièce sélectionnée : {} à la position {}.'.format(piece,
+                                                                                           self.position_selectionnee)
+            elif self.position_selectionnee == position:
+                self.position_selectionnee = None
+                self.messages['text'] = 'Aucune pièce sélectionnée'
+
+        except KeyError:
+            self.messages['foreground'] = 'red'
+            self.messages['text'] = 'Erreur: Aucune pièce à cet endroit.'
+            self.position_selectionnee = None
+
+
+def sauvegarder():
+    print("sauvegarder")
+
+
+def charger():
+    print("charger")
+
+
+def changertheme():
+    print("theme")
+
+
+def ouvreRegles():
+    webbrowser.open("https://fr.wikipedia.org/wiki/R%C3%A8gles_du_jeu_d%27%C3%A9checs")
+
+
+class BarreMenu(Menu):
+    def __init__(self,parent):
+        Menu.__init__(self,parent)
+
+        menufichier = Menu(self, tearoff=0)
+        menufichier.add_command(label="Ouvrir", command=charger)
+        menufichier.add_command(label="Sauvegarder", command=sauvegarder)
+        menufichier.add_separator()
+        menufichier.add_command(label="Quitter", command=self.quit)
+        self.add_cascade(label="Fichier", menu=menufichier)
+
+        # Ajout d'un menu pour les options
+        menuoptions = Menu(self, tearoff=0)
+        menuoptions.add_command(label="Couleur", command=changertheme)
+        self.add_cascade(label="Options", menu=menuoptions)
+
+        menuaide = Menu(self, tearoff=0)
+        menuaide.add_command(label="Règles des échecs", command=ouvreRegles)
+        self.add_cascade(label="Aide", menu=menuaide)
+
+
+
 
