@@ -4,7 +4,7 @@ Importez les modules nécessaires et démarrez votre programme à partir d'ici. 
 
 """
 from pychecs2.echecs.partie import Partie
-from pychecs2.interface.interface import Fenetre
+from pychecs2.interface.exemple import Fenetre
 
 if __name__ == '__main__':
     # Création d'une instance de Partie.
