@@ -8,6 +8,7 @@ import webbrowser
 # Exemple d'importation de la classe Partie.
 
 
+
 class CanvasEchiquier(Canvas):
     """Classe héritant d'un Canvas, et affichant un échiquier qui se redimensionne automatique lorsque
     la fenêtre est étirée.
@@ -84,7 +85,7 @@ class CanvasEchiquier(Canvas):
                              }
 
         # Pour tout paire position, pièce:
-        for position, piece in self.pieces.items():
+        for position, piece in self.partie.echiquier.dictionnaire_pieces.items():
             # On dessine la pièce dans le canvas, au centre de la case. On utilise l'attribut "tags" pour être en
             # mesure de récupérer les éléments dans le canvas.
             coordonnee_y = (self.n_lignes - self.chiffres_rangees.index(
@@ -92,7 +93,7 @@ class CanvasEchiquier(Canvas):
             coordonnee_x = self.lettres_colonnes.index(
                 position[0]) * self.n_pixels_par_case + self.n_pixels_par_case // 2
 
-            self.create_text(coordonnee_x, coordonnee_y, text=caracteres_pieces[piece],
+            self.create_text(coordonnee_x, coordonnee_y, text=piece,
                              font=('Deja Vu', self.n_pixels_par_case // 2), tags='piece')
 
 
