@@ -17,3 +17,4 @@ if __name__ == '__main__':
     Fenetre().mainloop()
 
     #effacercetteligneapreslecommitsvp
+    #pourquoicacommitpas
