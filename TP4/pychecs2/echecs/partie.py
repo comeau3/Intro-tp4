@@ -80,6 +80,7 @@ class Partie:
         print(piece)
 
         if piece is None:
+
             raise AucunePieceAPosition('Aucune pièce à cet emplacement')
         elif piece.couleur != self.joueur_actif:
             raise MauvaiseCouleurPiece("La pièce source n'appartient pas au joueur actif")
@@ -93,8 +94,10 @@ class Partie:
         """
         if self.joueur_actif == 'blanc':
             self.joueur_actif = 'noir'
+
         else:
             self.joueur_actif = 'blanc'
+
 
     def jouer(self):
         """Tant que la partie n'est pas terminée, joue la partie. À chaque tour :

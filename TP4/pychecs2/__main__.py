@@ -16,4 +16,5 @@ if __name__ == '__main__':
     # Création et affichage d'une fenêtre (aucun lien avec la partie ci-haut).
     Fenetre().mainloop()
 
-    #effacercetteligneapreslecommit
+    #effacercetteligneapreslecommitsvp
+    #pourquoicacommitpas
