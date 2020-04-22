@@ -235,8 +235,7 @@ def charger():
     print("charger")
 
 def nouvelle_partie():
-    # Echiquier().initialiser_echiquier_depart()
-    # print('nouvelle partie simonac')
+    pass
 
 def changertheme():
     CanvasEchiquier.couleur1 = "purple"
@@ -247,14 +246,6 @@ def changertheme():
 def ouvreRegles():
     webbrowser.open("https://fr.wikipedia.org/wiki/R%C3%A8gles_du_jeu_d%27%C3%A9checs")
 
-
-# def nouvelle_partie():
-#     #relier le bouton a la fonction
-#     canvas_echiquier.initialiser_echiquier_depart()
-#     #
-#     #
-#     # -----source(echiquier ligne 296)-----
-#     print('nouvelle partie')
 
 class BarreMenu(Menu):
     def __init__(self,parent):
