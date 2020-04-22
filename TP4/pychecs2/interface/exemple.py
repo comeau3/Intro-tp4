@@ -203,13 +203,16 @@ def changertheme():
 def ouvreRegles():
     webbrowser.open("https://fr.wikipedia.org/wiki/R%C3%A8gles_du_jeu_d%27%C3%A9checs")
 
+def nouvellePartie():
+    pass
 
 class BarreMenu(Menu):
     def __init__(self,parent):
         Menu.__init__(self,parent)
 
         menufichier = Menu(self, tearoff=0)
-        menufichier.add_command(label="Ouvrir", command=charger)
+        menufichier.add_command(label="Nouvelle Partie", command=nouvellePartie)
+        menufichier.add_command(label="Charger", command=charger)
         menufichier.add_command(label="Sauvegarder", command=sauvegarder)
         menufichier.add_separator()
         menufichier.add_command(label="Quitter", command=self.quit)
