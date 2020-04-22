@@ -1,7 +1,7 @@
 """Solution du laboratoire, permettant de bien comprendre comment hériter d'un widget de tkinter, de dessiner
 un échiquier dans un Canvas, puis de déterminer quelle case a été sélectionnée.
 """
-from tkinter import NSEW, Canvas, Label, Tk, Menu
+from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser
 from pychecs2.echecs.partie import (Partie)
 import webbrowser
 # Exemple d'importation de la classe Partie.
@@ -18,6 +18,9 @@ class CanvasEchiquier(Canvas):
         # Nombre de lignes et de colonnes.
         self.n_lignes = 8
         self.n_colonnes = 8
+
+        self.couleur1 = "white"
+        self.couleur2 = "gray"
 
         # Noms des lignes et des colonnes.
         self.chiffres_rangees = ['1', '2', '3', '4', '5', '6', '7', '8']
@@ -52,6 +55,7 @@ class CanvasEchiquier(Canvas):
     def dessiner_cases(self):
         """Méthode qui dessine les cases de l'échiquier.
         """
+
         for i in range(self.n_lignes):
             for j in range(self.n_colonnes):
                 debut_ligne = i * self.n_pixels_par_case
@@ -61,10 +65,10 @@ class CanvasEchiquier(Canvas):
 
                 # On détermine la couleur.
                 if (i + j) % 2 == 0:
-                    couleur = 'white'
+                    couleur = self.couleur1
 
                 else:
-                    couleur = 'gray'
+                    couleur = self.couleur2
 
                 # On dessine le rectangle. On utilise l'attribut "tags" pour être en mesure de récupérer les éléments
                 # par la suite.
@@ -171,12 +175,14 @@ class Fenetre(Tk):
                 if self.partie.partie_terminee():
                     self.messages['foreground'] = "black"
                     self.messages['text'] = "La partie est terminée" + self.partie.determiner_gagnant()
+
         except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
             self.messages['foreground'] = "red"
             self.messages['text'] = e
             self.canvas_echiquier.position_selectionne= None
         finally:
             self.canvas_echiquier.raffraichir()
+
 
 
 
@@ -189,8 +195,10 @@ def charger():
 
 
 def changertheme():
+    CanvasEchiquier.couleur1 = "purple"
+    CanvasEchiquier.couleur2 = "yellow"
     print("theme")
-
+    CanvasEchiquier.raffraichir()
 
 def ouvreRegles():
     webbrowser.open("https://fr.wikipedia.org/wiki/R%C3%A8gles_du_jeu_d%27%C3%A9checs")
