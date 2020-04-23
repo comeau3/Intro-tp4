@@ -1,10 +1,9 @@
 """Solution du laboratoire, permettant de bien comprendre comment hériter d'un widget de tkinter, de dessiner
 un échiquier dans un Canvas, puis de déterminer quelle case a été sélectionnée.
 """
-from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame, CENTER, LEFT,font, RIGHT, E
+from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame, CENTER, LEFT,font, RIGHT, E, messagebox
 from pychecs2.echecs.partie import (Partie)
-from pychecs2.echecs.partie import (Echiquier)
-
+from pychecs2.echecs.echiquier import (Echiquier)
 
 import webbrowser
 # Exemple d'importation de la classe Partie.
@@ -21,10 +20,8 @@ class CanvasEchiquier(Canvas):
         # Nombre de lignes et de colonnes.
         self.n_lignes = 8
         self.n_colonnes = 8
-
         self.couleur1 = "white"
         self.couleur2 = "gray"
-
         # Noms des lignes et des colonnes.
         self.chiffres_rangees = ['1', '2', '3', '4', '5', '6', '7', '8']
         self.lettres_colonnes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -61,8 +58,6 @@ class CanvasEchiquier(Canvas):
         self.position = "{}{}".format(self.partie.echiquier.lettres_colonnes[colonne], int(
             self.partie.echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
 
-
-
     def dessiner_cases(self):
         """Méthode qui dessine les cases de l'échiquier.
         """
@@ -93,10 +88,8 @@ class CanvasEchiquier(Canvas):
 
         #
 
-
-
-    #permet de trouver le carré sélectionné
-    #def carre_selectionne(self, event):
+    # permet de trouver le carré sélectionné
+    # def carre_selectionne(self, event):
         # y1 = event.y // self.canvas_echiquier.n_pixels_par_case
         # y2 = y1 + n_pixels_par_case
         # x1 = event.x // self.canvas_echiquier.n_pixels_par_case
@@ -131,8 +124,6 @@ class CanvasEchiquier(Canvas):
             self.create_text(coordonnee_x, coordonnee_y, text=piece,
                              font=('Deja Vu', self.n_pixels_par_case // 2), tags='piece')
 
-
-
     def redimensionner(self, event):
         # Nous recevons dans le "event" la nouvelle dimension dans les attributs width et height. On veut un damier
         # carré, alors on ne conserve que la plus petite de ces deux valeurs.
@@ -143,7 +134,7 @@ class CanvasEchiquier(Canvas):
         self.raffraichir()
 
     def raffraichir(self):
-         # On supprime les anciennes cases et on ajoute les nouvelles.
+        # On supprime les anciennes cases et on ajoute les nouvelles.
         self.delete('case')
         self.dessiner_cases()
 
@@ -153,10 +144,13 @@ class CanvasEchiquier(Canvas):
         #self.square.clear()
 
 
-
 class Fenetre(Tk):
     def __init__(self):
         super().__init__()
+        self.estTermine = False
+        self.estSauvegarde = False
+
+        self.protocol("WM_DELETE_WINDOW", self.demandeSauvegarde())
 
         # Nom de la fenêtre.
         self.title("Échiquier")
@@ -169,8 +163,6 @@ class Fenetre(Tk):
         # Truc pour le redimensionnement automatique des éléments de la fenêtre.
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
-
 
         # Création du canvas échiquier.
         self.canvas_echiquier = CanvasEchiquier(self, 60, self.partie)
@@ -187,8 +179,6 @@ class Fenetre(Tk):
         self.messagejoueuractif['text'] = 'Tour du joueur blanc'
         self.messagejoueuractif.grid()
 
-
-
         # On lie un clic sur le CanvasEchiquier à une méthode.
         self.canvas_echiquier.bind('<Button-1>', self.selectionner)
 
@@ -201,39 +191,46 @@ class Fenetre(Tk):
         print(event.x)
         print(event.y)
 
-        try:
-            if self.canvas_echiquier.position_selectionnee is None:
-                print('1er clic')
-                self.canvas_echiquier.position_selectionnee = position
-                self.messages['text'] = ""
-            else:
-                print('second clic')
-                print(self.canvas_echiquier.position_selectionnee, position)
-                self.partie.deplacer(self.canvas_echiquier.position_selectionnee, position)
+        if not self.partie.partie_terminee():
+            try:
+                if self.canvas_echiquier.position_selectionnee is None:
+                    print('1er clic')
+                    self.canvas_echiquier.position_selectionnee = position
+                    self.messages['text'] = ""
+                else:
+                    print('second clic')
+                    print(self.canvas_echiquier.position_selectionnee, position)
+                    self.partie.deplacer(self.canvas_echiquier.position_selectionnee, position)
+                    self.canvas_echiquier.position_selectionnee = None
+                    self.estSauvegarde = False
+
+
+            except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
                 self.canvas_echiquier.position_selectionnee = None
+                self.messages['foreground'] = "red"
+                self.messages['text'] = e
+                self.canvas_echiquier.position_selectionne= None
+            finally:
+                self.canvas_echiquier.raffraichir()
 
-                if self.partie.partie_terminee():
-                    self.messages['foreground'] = "black"
-                    self.messages['text'] = "La partie est terminée, le joueur " + self.partie.determiner_gagnant() + ' a gagné! =)'
+            if self.partie.joueur_actif == 'blanc':
+                self.messagejoueuractif['foreground'] = 'black'
+                self.messagejoueuractif['text'] = 'Tour du joueur blanc'
+            else:
+                self.messagejoueuractif['foreground'] = "black"
+                self.messagejoueuractif['text'] = 'Tour du joueur noir'
 
-        except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
-            self.canvas_echiquier.position_selectionnee = None
-            self.messages['foreground'] = "red"
-            self.messages['text'] = e
-            self.canvas_echiquier.position_selectionne= None
-        finally:
-            self.canvas_echiquier.raffraichir()
+        if self.partie.partie_terminee():
+            self.messages['foreground'] = "green"
+            self.messages[
+                'text'] = "La partie est terminée, le joueur " + self.partie.determiner_gagnant() + ' a gagné! =)'
 
-        if self.partie.joueur_actif == 'blanc':
-            self.messagejoueuractif['foreground'] = 'black'
-            self.messagejoueuractif['text'] = 'Tour du joueur blanc'
+    def demandeSauvegarde(self):
+        if not self.estSauvegarde:
+            if not messagebox.askyesno("Quitter", "Voulez vous sauvegarder avant de quitter?"):
+                self.destroy()
         else:
-            self.messagejoueuractif['foreground'] = "black"
-            self.messagejoueuractif['text'] = 'Tour du joueur noir'
-
-
-
-
+            self.destroy()
 
 class BarreMenu(Menu):
     def __init__(self, parent, canvas_echiquier):
@@ -261,11 +258,14 @@ class BarreMenu(Menu):
 
     def sauvegarder(self):
         pickle.dump(self.canvas_echiquier.partie, file=open("partie.pickle", "wb"))
+        pickle.dump(self.canvas_echiquier.partie.echiquier.dictionnaire_pieces, file=open("pieces.pickle", "wb"))
+        self.canvas_echiquier.estSauvegarde = True
         print("sauvegarder")
 
     def charger(self):
-        Partie = pickle.load(open("partie.pickle", "rb"))
-        self.canvas_echiquier.partie = Partie
+        PartieSauvegarde = pickle.load(open("partie.pickle", "rb"))
+        PiecesSauvegarde = pickle.load(open("pieces.pickle", "rb"))
+        self.canvas_echiquier.partie = PartieSauvegarde
         self.canvas_echiquier.raffraichir()
         print("charger")
 
