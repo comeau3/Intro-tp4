@@ -1,7 +1,7 @@
 """Solution du laboratoire, permettant de bien comprendre comment hériter d'un widget de tkinter, de dessiner
 un échiquier dans un Canvas, puis de déterminer quelle case a été sélectionnée.
 """
-from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame
+from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame, CENTER, LEFT,font, RIGHT, E
 from pychecs2.echecs.partie import (Partie)
 from pychecs2.echecs.partie import (Echiquier)
 
@@ -287,3 +287,37 @@ class BarreMenu(Menu):
 
     def ouvreRegles(self):
         webbrowser.open("https://fr.wikipedia.org/wiki/R%C3%A8gles_du_jeu_d%27%C3%A9checs")
+
+f_accueil = Tk()
+f_accueil.title("Fenêtre d'acceuil")
+f_accueil.geometry("650x650")
+
+f_accueil_label1 = Label(f_accueil, text="Bienvenue dans notre jeu d'échec à interface graphique!", font="Times 20", justify=CENTER)
+f_accueil_label1.grid(row = 0)
+
+
+texte1 = Label(f_accueil, text="Dans cet interface graphique, vous trouverez différentes options \n permettant de jouer aux échecs!", font="Times 16")
+texte1.grid(row = 1,pady=100)
+
+texte2 = Label(f_accueil, text="Ce jeu d'échec représente un prototype de base. Les mouvements de type 'roque',\n "
+                               "la prise 'en passant' ainsi que la promotion du pion de sont pas supportés. "
+                               "\n De plus, les détections des mises en échecs ne sont pas programmées, \n"
+                               "ainsi il vous sera possible d'effectuer un mouvement qui vous mettera en échec. \n"
+                               "La partie se terminera quand un des rois ne sera plus sur l'échiquier, les parties \n"
+                               "nulles sont donc par le fait même, impossibles. Les règles complètes sont disponibles \n"
+                               "dans l'onglet 'aide'."
+               , justify=LEFT, font="Times 14")
+
+texte2.grid(row = 2,pady=0)
+
+texte3 = Label(f_accueil, text="Fermez cette fenêtre pour débuter la partie!")
+texte3.grid(row = 3, pady=50)
+f = font.Font(texte3, texte3.cget("font"))
+f.configure(underline=True)
+texte3.configure(font=f)
+
+
+name1 = Label(f_accueil, text="Réalisé par:\nJean-Christophe Comeau\nColin Routhier-Legault", justify=RIGHT)
+name1.grid(row = 4, sticky=E)
+
+f_accueil.mainloop()
