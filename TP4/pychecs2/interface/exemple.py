@@ -5,6 +5,7 @@ from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame, CENTER, L
 from pychecs2.echecs.partie import (Partie)
 from pychecs2.echecs.partie import (Echiquier)
 
+
 import webbrowser
 # Exemple d'importation de la classe Partie.
 from pychecs2.echecs.exception import (AucunePieceAPosition, MauvaiseCouleurPiece, ErreurDeplacement)
@@ -259,17 +260,18 @@ class BarreMenu(Menu):
         self.add_cascade(label="Aide", menu=menuaide)
 
     def sauvegarder(self):
-        pickle.dump(Partie, file=open("partie.pickle", "wb"))
+        pickle.dump(self.canvas_echiquier.partie, file=open("partie.pickle", "wb"))
         print("sauvegarder")
 
-    def charger(canvas_echiquier):
+    def charger(self):
         Partie = pickle.load(open("partie.pickle", "rb"))
-        partie = Partie
-        canvas_echiquier.raffraichir()
+        self.canvas_echiquier.partie = Partie
+        self.canvas_echiquier.raffraichir()
         print("charger")
 
     def nouvelle_partie(self):
         self.canvas_echiquier.partie.echiquier.initialiser_echiquier_depart()
+        self.canvas_echiquier.partie.joueur_actif = 'blanc'
         self.canvas_echiquier.raffraichir()
 
     def changertheme(self):
