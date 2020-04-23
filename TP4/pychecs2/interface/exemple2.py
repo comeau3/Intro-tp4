@@ -1,10 +1,8 @@
 """Solution du laboratoire, permettant de bien comprendre comment hériter d'un widget de tkinter, de dessiner
 un échiquier dans un Canvas, puis de déterminer quelle case a été sélectionnée.
 """
-from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame
+from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser, Frame, Button
 from pychecs2.echecs.partie import (Partie)
-from pychecs2.echecs.partie import (Echiquier)
-
 import webbrowser
 # Exemple d'importation de la classe Partie.
 from pychecs2.echecs.exception import (AucunePieceAPosition, MauvaiseCouleurPiece, ErreurDeplacement)
@@ -54,20 +52,12 @@ class CanvasEchiquier(Canvas):
         # constructeur.
         self.bind('<Configure>', self.redimensionner)
 
-    def obtenir_position_a_partir_de_coordonnees(self, event):
-        ligne = event.y // self.canvas_echiquier.n_pixels_par_case
-        colonne = event.x // self.canvas_echiquier.n_pixels_par_case
-        self.position = "{}{}".format(self.partie.echiquier.lettres_colonnes[colonne], int(
-            self.partie.echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
-
-
-
     def dessiner_cases(self):
         """Méthode qui dessine les cases de l'échiquier.
         """
 
-        position = self.obtenir_position_a_partir_de_coordonnees
-        print(position)
+
+
 
         for i in range(self.n_lignes):
             for j in range(self.n_colonnes):
@@ -76,11 +66,10 @@ class CanvasEchiquier(Canvas):
                 debut_colonne = j * self.n_pixels_par_case
                 fin_colonne = debut_colonne + self.n_pixels_par_case
 
-
                 # On détermine la couleur.
-                if position == self.position_selectionnee:
-                    couleur = "yellow"
-                elif (i + j) % 2 == 0:
+
+
+                if (i + j) % 2 == 0:
                     couleur = self.couleur1
 
                 else:
@@ -92,16 +81,13 @@ class CanvasEchiquier(Canvas):
 
         #
 
-
-
-    #permet de trouver le carré sélectionné
-    #def carre_selectionne(self, event):
-        # y1 = event.y // self.canvas_echiquier.n_pixels_par_case
-        # y2 = y1 + n_pixels_par_case
-        # x1 = event.x // self.canvas_echiquier.n_pixels_par_case
-        # x2 = x1 + n_pixels_par_case
-        # return x1, y1, x2, y2
-
+    # permet de trouver le carré sélectionné
+    # def carre_selectionne(self, event):
+    # y1 = event.y // self.canvas_echiquier.n_pixels_par_case
+    # y2 = y1 + n_pixels_par_case
+    # x1 = event.x // self.canvas_echiquier.n_pixels_par_case
+    # x2 = x1 + n_pixels_par_case
+    # return x1, y1, x2, y2
 
     def dessiner_pieces(self):
         # Caractères unicode représentant les pièces. Vous avez besoin de la police d'écriture DejaVu.
@@ -130,8 +116,6 @@ class CanvasEchiquier(Canvas):
             self.create_text(coordonnee_x, coordonnee_y, text=piece,
                              font=('Deja Vu', self.n_pixels_par_case // 2), tags='piece')
 
-
-
     def redimensionner(self, event):
         # Nous recevons dans le "event" la nouvelle dimension dans les attributs width et height. On veut un damier
         # carré, alors on ne conserve que la plus petite de ces deux valeurs.
@@ -142,15 +126,39 @@ class CanvasEchiquier(Canvas):
         self.raffraichir()
 
     def raffraichir(self):
-         # On supprime les anciennes cases et on ajoute les nouvelles.
+        # On supprime les anciennes cases et on ajoute les nouvelles.
         self.delete('case')
         self.dessiner_cases()
 
         # On supprime les anciennes pièces et on ajoute les nouvelles.
         self.delete('piece')
         self.dessiner_pieces()
-        #self.square.clear()
+        # self.square.clear()
 
+    def mouseDown(self, event):
+        "Opération quand le bouton est tenu"
+        self.currObjet = None
+        self.x1, self.y1 = event.x, event.y
+        # find closest trouve l'item le plus près
+        self.selObject = self.find_closest((self.x1, self.y1))
+        self.itemconfig(self.selObject, width=3)
+        self.lift(self.selObject)
+
+    def mouseMove(self, event):
+        "Op. à effectuer quand la souris se déplace, bouton gauche enfoncé"
+
+        x2, y2 = event.x, event.y
+        dx, dy = x2 - self.x1, y2 - self.y1
+        if self.selObject:
+            self.move(self.selObject, dx, dy)
+        self.x1, self.y1 = x2, y2
+
+    def mouseUp(self, event):
+        "Op. à effectuer quand le bouton gauche de la souris est relâché"
+
+        if self.selObject:
+            self.itemconfig(self.selObject, width=1)
+        self.selObject = None
 
 
 class Fenetre(Tk):
@@ -169,15 +177,17 @@ class Fenetre(Tk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-
+        # Création du menu
+        menubar = BarreMenu(self)
+        self.config(menu=menubar)
 
         # Création du canvas échiquier.
         self.canvas_echiquier = CanvasEchiquier(self, 60, self.partie)
-        self.canvas_echiquier.grid(sticky=NSEW)
 
-        # Création du menu
-        self.menubar = BarreMenu(self, self.canvas_echiquier)
-        self.config(menu=self.menubar)
+        #test changement thème avec bouton
+        B = Button(text="Changer Theme", command=self.ChangerTheme)
+        B.grid()
+        self.canvas_echiquier.grid(sticky=NSEW)
 
         # Ajout d'une étiquette d'information.
         self.messages = Label(self)
@@ -186,17 +196,26 @@ class Fenetre(Tk):
         self.messagejoueuractif['text'] = 'Tour du joueur blanc'
         self.messagejoueuractif.grid()
 
-
-
         # On lie un clic sur le CanvasEchiquier à une méthode.
         self.canvas_echiquier.bind('<Button-1>', self.selectionner)
+
+    def ChangerTheme(self):
+       if self.canvas_echiquier.couleur2 != "purple":
+            self.canvas_echiquier.couleur2 = "purple"
+       elif self.canvas_echiquier.couleur2 == "purple":
+           self.canvas_echiquier.couleur2 = "green"
+
+       self.canvas_echiquier.raffraichir()
+
+
 
     def selectionner(self, event):
 
         # On trouve le numéro de ligne/colonne en divisant les positions en y/x par le nombre de pixels par case.
         ligne = event.y // self.canvas_echiquier.n_pixels_par_case
         colonne = event.x // self.canvas_echiquier.n_pixels_par_case
-        position = "{}{}".format(self.canvas_echiquier.lettres_colonnes[colonne], int(self.canvas_echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
+        position = "{}{}".format(self.canvas_echiquier.lettres_colonnes[colonne], int(
+            self.canvas_echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
         print(event.x)
         print(event.y)
 
@@ -213,13 +232,14 @@ class Fenetre(Tk):
 
                 if self.partie.partie_terminee():
                     self.messages['foreground'] = "black"
-                    self.messages['text'] = "La partie est terminée, le joueur " + self.partie.determiner_gagnant() + ' a gagné! =)'
+                    self.messages[
+                        'text'] = "La partie est terminée, le joueur " + self.partie.determiner_gagnant() + ' a gagné! =)'
 
         except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
             self.canvas_echiquier.position_selectionnee = None
             self.messages['foreground'] = "red"
             self.messages['text'] = e
-            self.canvas_echiquier.position_selectionne= None
+            self.canvas_echiquier.position_selectionne = None
         finally:
             self.canvas_echiquier.raffraichir()
 
@@ -231,15 +251,9 @@ class Fenetre(Tk):
             self.messagejoueuractif['text'] = 'Tour du joueur noir'
 
 
-
-
-
 class BarreMenu(Menu):
-    def __init__(self, parent, canvas_echiquier):
+    def __init__(self, parent):
         Menu.__init__(self, parent)
-
-        self.canvas_echiquier = canvas_echiquier
-        self.parent = parent #le parent est la fenetre
 
         menufichier = Menu(self, tearoff=0)
         menufichier.add_command(label='Nouvelle partie', command=self.nouvelle_partie)
@@ -251,7 +265,7 @@ class BarreMenu(Menu):
 
         # Ajout d'un menu pour les options
         menuoptions = Menu(self, tearoff=0)
-        menuoptions.add_command(label="Couleur", command= self.changertheme)
+        menuoptions.add_command(label="Couleur", command=self.changertheme)
         self.add_cascade(label="Options", menu=menuoptions)
 
         menuaide = Menu(self, tearoff=0)
@@ -269,21 +283,27 @@ class BarreMenu(Menu):
         print("charger")
 
     def nouvelle_partie(self):
-        self.canvas_echiquier.partie.echiquier.initialiser_echiquier_depart()
-        self.canvas_echiquier.raffraichir()
+        pass
 
     def changertheme(self):
-        if self.canvas_echiquier.couleur1 == "white":
-            self.canvas_echiquier.couleur1 = "green"
-            self.canvas_echiquier.couleur2 = "red"
-
-        elif self.canvas_echiquier.couleur1 == "green":
-            self.canvas_echiquier.couleur1="yellow"
-            self.canvas_echiquier.couleur2= "purple"
-        else:
-            self.canvas_echiquier.couleur1= "white"
-            self.canvas_echiquier.couleur2 = "gray"
-        self.canvas_echiquier.raffraichir()
+        CanvasEchiquier.couleur1 = "purple"
+        CanvasEchiquier.couleur2 = "yellow"
+        print("theme")
+        Fenetre.canvas_echiquier
 
     def ouvreRegles(self):
         webbrowser.open("https://fr.wikipedia.org/wiki/R%C3%A8gles_du_jeu_d%27%C3%A9checs")
+
+
+if __name__ == '__main__':
+    # Création d'une instance de Partie.
+    # p = Partie()
+
+    # Affichage de l'échiquier dans cette partie.
+    # print(p.echiquier)
+
+    # Création et affichage d'une fenêtre (aucun lien avec la partie ci-haut).
+    Fenetre().mainloop()
+
+    # effacercetteligneapreslecommitsvp
+    # pourquoicacommitpas
