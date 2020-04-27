@@ -150,7 +150,7 @@ class Fenetre(Tk):
         self.estTermine = False
         self.estSauvegarde = False
 
-        self.protocol("WM_DELETE_WINDOW", self.demandeSauvegarde())
+        self.protocol("WM_DELETE_WINDOW", self.demandeSauvegarde)
 
         # Nom de la fenêtre.
         self.title("Échiquier")
@@ -229,6 +229,9 @@ class Fenetre(Tk):
         if not self.estSauvegarde:
             if not messagebox.askyesno("Quitter", "Voulez vous sauvegarder avant de quitter?"):
                 self.destroy()
+            else:
+                self.menubar.sauvegarder()
+                self.destroy()
         else:
             self.destroy()
 
@@ -244,7 +247,7 @@ class BarreMenu(Menu):
         menufichier.add_command(label="Ouvrir", command=self.charger)
         menufichier.add_command(label="Sauvegarder", command=self.sauvegarder)
         menufichier.add_separator()
-        menufichier.add_command(label="Quitter", command=self.quit)
+        menufichier.add_command(label="Quitter", command=self.quitter)
         self.add_cascade(label="Fichier", menu=menufichier)
 
         # Ajout d'un menu pour les options
@@ -257,15 +260,13 @@ class BarreMenu(Menu):
         self.add_cascade(label="Aide", menu=menuaide)
 
     def sauvegarder(self):
-        pickle.dump(self.canvas_echiquier.partie, file=open("partie.pickle", "wb"))
         pickle.dump(self.canvas_echiquier.partie.echiquier.dictionnaire_pieces, file=open("pieces.pickle", "wb"))
         self.canvas_echiquier.estSauvegarde = True
         print("sauvegarder")
 
     def charger(self):
-        PartieSauvegarde = pickle.load(open("partie.pickle", "rb"))
         PiecesSauvegarde = pickle.load(open("pieces.pickle", "rb"))
-        self.canvas_echiquier.partie = PartieSauvegarde
+        self.canvas_echiquier.partie.echiquier.dictionnaire_pieces = PiecesSauvegarde
         self.canvas_echiquier.raffraichir()
         print("charger")
 
@@ -273,6 +274,9 @@ class BarreMenu(Menu):
         self.canvas_echiquier.partie.echiquier.initialiser_echiquier_depart()
         self.canvas_echiquier.partie.joueur_actif = 'blanc'
         self.canvas_echiquier.raffraichir()
+
+    def quitter(self):
+        Fenetre.demandeSauvegarde(self.parent)
 
     def changertheme(self):
         if self.canvas_echiquier.couleur1 == "white":
