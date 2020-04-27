@@ -16,8 +16,8 @@ class Echiquier:
             Une position est une chaîne de deux caractères.
             Le premier caractère est une lettre entre a et h, représentant la colonne de l'échiquier.
             Le second caractère est un chiffre entre 1 et 8, représentant la rangée de l'échiquier.
-        chiffres_rangees (list): Une liste contenant, dans l'ordre, les chiffres représentant les rangées.
-        lettres_colonnes (list): Une liste contenant, dans l'ordre, les lettres représentant les colonnes.
+        chiffres_rangees (list): Une txtListe contenant, dans l'ordre, les chiffres représentant les rangées.
+        lettres_colonnes (list): Une txtListe contenant, dans l'ordre, les lettres représentant les colonnes.
 
     """
     def __init__(self):
@@ -86,7 +86,7 @@ class Echiquier:
         return piece.couleur
 
     def rangees_entre(self, rangee_debut, rangee_fin):
-        """Retourne la liste des rangées qui sont situées entre les deux rangées reçues en argument, exclusivement.
+        """Retourne la txtListe des rangées qui sont situées entre les deux rangées reçues en argument, exclusivement.
         Attention de conserver le bon ordre.
 
         Args:
@@ -104,10 +104,10 @@ class Echiquier:
             ['7', '6', '5', '4']
 
         Indice:
-            Utilisez self.chiffres_rangees pour obtenir une liste des rangées valides.
+            Utilisez self.chiffres_rangees pour obtenir une txtListe des rangées valides.
 
         Returns:
-            list: Une liste des rangées (en str) entre le début et la fin, dans le bon ordre.
+            list: Une txtListe des rangées (en str) entre le début et la fin, dans le bon ordre.
 
         """
         index_debut = self.chiffres_rangees.index(rangee_debut)
@@ -120,7 +120,7 @@ class Echiquier:
         return self.chiffres_rangees[index_debut+direction:index_fin:direction]
 
     def colonnes_entre(self, colonne_debut, colonne_fin):
-        """Retourne la liste des colonnes qui sont situées entre les deux colonnes reçues en argument, exclusivement.
+        """Retourne la txtListe des colonnes qui sont situées entre les deux colonnes reçues en argument, exclusivement.
         Attention de conserver le bon ordre.
 
         Args:
@@ -138,10 +138,10 @@ class Echiquier:
             ['g', 'f', 'e', 'd']
 
         Indice:
-            Utilisez self.lettres_colonnes pour obtenir une liste des colonnes valides.
+            Utilisez self.lettres_colonnes pour obtenir une txtListe des colonnes valides.
 
         Returns:
-            list: Une liste des colonnes (en str) entre le début et la fin, dans le bon ordre.
+            list: Une txtListe des colonnes (en str) entre le début et la fin, dans le bon ordre.
 
         """
         index_debut = self.lettres_colonnes.index(colonne_debut)
