@@ -1,7 +1,7 @@
 """Solution du laboratoire, permettant de bien comprendre comment hériter d'un widget de tkinter, de dessiner
 un échiquier dans un Canvas, puis de déterminer quelle case a été sélectionnée.
 """
-from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame, CENTER, LEFT,font, RIGHT, E, messagebox
+from tkinter import NSEW, Canvas, Label, Tk, Menu, colorchooser,Frame, CENTER, LEFT,font, RIGHT, E, messagebox, filedialog
 from pychecs2.echecs.partie import (Partie)
 from pychecs2.echecs.echiquier import (Echiquier)
 
@@ -22,6 +22,8 @@ class CanvasEchiquier(Canvas):
         self.n_colonnes = 8
         self.couleur1 = "white"
         self.couleur2 = "gray"
+        self.parent = parent
+
         # Noms des lignes et des colonnes.
         self.chiffres_rangees = ['1', '2', '3', '4', '5', '6', '7', '8']
         self.lettres_colonnes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -50,21 +52,21 @@ class CanvasEchiquier(Canvas):
         # On fait en sorte que le redimensionnement du canvas redimensionne son contenu. Cet événement étant également
         # généré lors de la création de la fenêtre, nous n'avons pas à dessiner les cases et les pièces dans le
         # constructeur.
+
         self.bind('<Configure>', self.redimensionner)
+        self.bind('<Button-1>', self.obtenir_position_a_partir_de_coordonnees)
+
 
     def obtenir_position_a_partir_de_coordonnees(self, event):
-        ligne = event.y // self.canvas_echiquier.n_pixels_par_case
-        colonne = event.x // self.canvas_echiquier.n_pixels_par_case
-        self.position = "{}{}".format(self.partie.echiquier.lettres_colonnes[colonne], int(
-            self.partie.echiquier.chiffres_rangees[self.canvas_echiquier.n_lignes - ligne - 1]))
+        ligne = event.y // self.n_pixels_par_case
+        colonne = event.x // self.n_pixels_par_case
+        self.position_selectionnee = "{}{}".format(self.partie.echiquier.lettres_colonnes[colonne], int(
+            self.partie.echiquier.chiffres_rangees[self.n_lignes - ligne - 1]))
+
 
     def dessiner_cases(self):
         """Méthode qui dessine les cases de l'échiquier.
         """
-
-        position = self.obtenir_position_a_partir_de_coordonnees
-        print(position)
-
         for i in range(self.n_lignes):
             for j in range(self.n_colonnes):
                 debut_ligne = i * self.n_pixels_par_case
@@ -72,12 +74,13 @@ class CanvasEchiquier(Canvas):
                 debut_colonne = j * self.n_pixels_par_case
                 fin_colonne = debut_colonne + self.n_pixels_par_case
 
-
                 # On détermine la couleur.
-                if position == self.position_selectionnee:
-                    couleur = "yellow"
-                elif (i + j) % 2 == 0:
+
+                if (i + j) % 2 == 0:
                     couleur = self.couleur1
+
+                elif (i + j) == self.position_selectionnee:
+                    couleur = "cyan"
 
                 else:
                     couleur = self.couleur2
@@ -204,7 +207,6 @@ class Fenetre(Tk):
                     self.canvas_echiquier.position_selectionnee = None
                     self.estSauvegarde = False
 
-
             except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
                 self.canvas_echiquier.position_selectionnee = None
                 self.messages['foreground'] = "red"
@@ -260,15 +262,20 @@ class BarreMenu(Menu):
         self.add_cascade(label="Aide", menu=menuaide)
 
     def sauvegarder(self):
-        pickle.dump(self.canvas_echiquier.partie.echiquier.dictionnaire_pieces, file=open("pieces.pickle", "wb"))
-        self.canvas_echiquier.estSauvegarde = True
-        print("sauvegarder")
+
+        nom_fichier = filedialog.asksaveasfilename(defaultextension='.pickle')
+        pieces_sauvegarde = open(nom_fichier, 'wb')
+        pickle.dump(self.canvas_echiquier.partie.echiquier.dictionnaire_pieces, pieces_sauvegarde)
+        self.parent.estSauvegarde= True
+        print("Partie Sauvegardée")
 
     def charger(self):
-        PiecesSauvegarde = pickle.load(open("pieces.pickle", "rb"))
-        self.canvas_echiquier.partie.echiquier.dictionnaire_pieces = PiecesSauvegarde
+        nom_fichier = filedialog.askopenfilename()
+        pieces_sauvegarde = open(nom_fichier, 'rb')
+        self.canvas_echiquier.partie.echiquier.dictionnaire_pieces = pickle.load(pieces_sauvegarde)
         self.canvas_echiquier.raffraichir()
-        print("charger")
+        print("Partie chargée")
+
 
     def nouvelle_partie(self):
         self.canvas_echiquier.partie.echiquier.initialiser_echiquier_depart()
