@@ -73,6 +73,7 @@ sauvegarde ouvrir et quels déplacements effectuer pour que le correcteur puisse
 2. Affichage d’une liste des déplacements effectués 3 points
 4. Sauvegarde et possibilité de «revoir» une partie enregistrée 5 points
 7. Permettre de changer le thème (couleurs, etc.) 5 points
+10. Afficher les pièces que chaque joueur a perdu 5 points
 12. Demander si on veut sauvegarder avant de quitter/charger 5 points
 20. Fenêtre de bienvenue, avec explications du jeu et sélection d’options 5 points
 

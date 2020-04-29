@@ -140,6 +140,8 @@ class Fenetre(Tk):
         self.estTermine = False
         self.estSauvegarde = False
         self.listemovements = []
+        self.listepiecesnoirs = []
+        self.listepiecesblanches = []
 
         # On redéfinie ce qui se passe lors de la fermeture du  fichier.
         self.protocol("WM_DELETE_WINDOW", self.demandesauvegarde)
@@ -166,11 +168,24 @@ class Fenetre(Tk):
 
         # Ajout d'une étiquette d'information.
         self.lblMessages = Label(self)
+        self.lblMessages.config(font=("Courier", 18))
         self.lblMessages.grid()
 
         self.lblMessagejoueuractif = Label(self)
         self.lblMessagejoueuractif['text'] = 'Tour du joueur blanc'
+        self.lblMessagejoueuractif.config(font=("Courier", 18))
         self.lblMessagejoueuractif.grid()
+
+        # Listes des pièces perdues par chaque joueurs
+        self.lblpiecesblanches = Label(self, anchor='w')
+        self.lblpiecesblanches.grid(row=4, column=0)
+        self.lblpiecesblanches.config(font=("Courier", 18))
+        self.lblpiecesblanches['text'] = 'Pièces blanches perdues: '
+
+        self.lblpiecesnoires = Label(self, anchor='w')
+        self.lblpiecesnoires.config(font=("Courier", 18))
+        self.lblpiecesnoires.grid(row=4, column =1)
+        self.lblpiecesnoires['text'] = 'Pièces noires perdues: '
 
         # Création d'une zone de texte pour l'affichage des déplacements.
         self.txtListe = Text(self)
@@ -190,18 +205,19 @@ class Fenetre(Tk):
         position = "{}{}".format(self.canvas_echiquier.lettres_colonnes[colonne],
                                  int(self.canvas_echiquier.chiffres_rangees[
                                          self.canvas_echiquier.n_lignes - ligne - 1]))
-        print(event.x)
-        print(event.y)
+
+        # print(event.x)               # Pour des fins de débug'
+        # print(event.y)               # Pour des fins de débug
 
         if not self.partie.partie_terminee():
             try:
                 if self.canvas_echiquier.position_selectionnee is None:
-                    print('1er clic')
+                    # print('1er clic')  # Pour tester les positions sélectionnées
                     self.canvas_echiquier.position_selectionnee = position
                     self.lblMessages['text'] = ""
                 else:
-                    print('second clic')
-                    print(self.canvas_echiquier.position_selectionnee, position)
+                    # print('second clic') # Pour tester les positions sélectionnées
+                    # print(self.canvas_echiquier.position_selectionnee, position)
                     piecesource = self.partie.echiquier.recuperer_piece_a_position(
                         self.canvas_echiquier.position_selectionnee)
 
@@ -213,6 +229,7 @@ class Fenetre(Tk):
                             self.partie.joueur_actif, piecesource,
                             self.canvas_echiquier.position_selectionnee,
                             position, piececible)
+                        self.piecesprises(piececible)
                     else:
                         mouvement = "Le joueur {} a joué la pièce {} de {} à {} ". \
                             format(self.partie.joueur_actif, piecesource, self.canvas_echiquier.position_selectionnee,
@@ -241,9 +258,22 @@ class Fenetre(Tk):
                 self.lblMessagejoueuractif['text'] = 'Tour du joueur noir'
 
         if self.partie.partie_terminee():
-            self.lblMessages['foreground'] = "green"
-            self.lblMessages[
-                'text'] = "La partie est terminée, le joueur " + self.partie.determiner_gagnant() + ' a gagné! =)'
+            if messagebox.askyesno( "Partie terminée", "La partie est terminée, le joueur " +
+                                    self.partie.determiner_gagnant() + ' a gagné! =)' + '\n' +
+                                    'Voulez-vous rejouer de nouveau?'):
+                self.menubar.nouvelle_partie()
+
+    def piecesprises(self,piece):
+        if self.partie.joueur_actif == "blanc":
+            self.listepiecesnoirs.append(piece)
+            self.lblpiecesnoires.config(text='Pièces noires perdues: ' + (" ".join(map(str,self.listepiecesnoirs))))
+
+        elif self.partie.joueur_actif == "noir":
+            self.listepiecesblanches.append(piece)
+            self.lblpiecesblanches.config(text='Pièces blanches perdues: ' + (" ".join(map(str, self.listepiecesblanches))))
+
+        for x in self.listepiecesnoirs:
+            print(x)
 
     def demandesauvegarde(self):
         if not self.estSauvegarde:
@@ -301,10 +331,10 @@ class BarreMenu(Menu):
                 pickle.dump(self.canvas_echiquier.partie.echiquier.dictionnaire_pieces, sauvegarde)
                 pickle.dump(self.parent.listemovements, sauvegarde)
                 self.parent.estSauvegarde = True
-                print("Partie Sauvegardée")
+                messagebox.showinfo("Sauvegarde", "Sauvegarde Completée")
 
         except FileNotFoundError:
-            print("Sauvegarde Annulée")
+            messagebox.showinfo("Sauvegarde", "Sauvegarde Annulée")
 
     def charger(self):
         nom_fichier = filedialog.askopenfilename()
@@ -315,12 +345,13 @@ class BarreMenu(Menu):
                 self.canvas_echiquier.partie.echiquier.dictionnaire_pieces = pickle.load(charger)
                 self.parent.listemovements = pickle.load(charger)
                 self.canvas_echiquier.raffraichir()
-                print("Partie chargée")
+                messagebox.showinfo("Chargement", "Chargement Completé")
+
                 self.parent.rafraichirtexte()
         except FileNotFoundError:
-            print("Chargement annulé")
+            messagebox.showinfo("Chargement", "Chargement Annulé")
         except UnpicklingError:
-            print("Erreur lors du chargement. Mauvais fichier?")
+            messagebox.showerror("Chargement", "Erreur lors du chargement. Mauvais fichier?")
 
     def nouvelle_partie(self):
         self.canvas_echiquier.partie.echiquier.initialiser_echiquier_depart()
