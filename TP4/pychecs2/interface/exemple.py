@@ -179,11 +179,11 @@ class Fenetre(Tk):
         # Listes des pièces perdues par chaque joueurs
         self.lblpiecesblanches = Label(self, anchor='w')
         self.lblpiecesblanches.grid(row=4, column=0)
-        self.lblpiecesblanches.config(font=("Courier", 18))
+        self.lblpiecesblanches.config(font=("Courier", 14))
         self.lblpiecesblanches['text'] = 'Pièces blanches perdues: '
 
         self.lblpiecesnoires = Label(self, anchor='w')
-        self.lblpiecesnoires.config(font=("Courier", 18))
+        self.lblpiecesnoires.config(font=("Courier", 14))
         self.lblpiecesnoires.grid(row=4, column =1)
         self.lblpiecesnoires['text'] = 'Pièces noires perdues: '
 
@@ -212,9 +212,15 @@ class Fenetre(Tk):
         if not self.partie.partie_terminee():
             try:
                 if self.canvas_echiquier.position_selectionnee is None:
-                    # print('1er clic')  # Pour tester les positions sélectionnées
-                    self.canvas_echiquier.position_selectionnee = position
-                    self.lblMessages['text'] = ""
+                    if self.partie.echiquier.recuperer_piece_a_position(position):
+                        if self.partie.joueur_actif == self.partie.echiquier.couleur_piece_a_position(position):
+                            # print('1er clic')  # Pour tester les positions sélectionnées
+
+                            self.canvas_echiquier.position_selectionnee = position
+                            self.lblMessages['text'] = ""
+                        else:
+                            messagebox.showwarning('Mauvaise couleur','Mauvaise couleur de pièce sélectionnée')
+
                 else:
                     # print('second clic') # Pour tester les positions sélectionnées
                     # print(self.canvas_echiquier.position_selectionnee, position)
@@ -229,13 +235,15 @@ class Fenetre(Tk):
                             self.partie.joueur_actif, piecesource,
                             self.canvas_echiquier.position_selectionnee,
                             position, piececible)
-                        self.piecesprises(piececible)
+
                     else:
                         mouvement = "Le joueur {} a joué la pièce {} de {} à {} ". \
                             format(self.partie.joueur_actif, piecesource, self.canvas_echiquier.position_selectionnee,
                                    position)
                     self.partie.deplacer(self.canvas_echiquier.position_selectionnee, position)
 
+                    if piececible is not None:
+                        self.piecesprises(piececible)
                     self.listemovements.append(mouvement)
                     self.canvas_echiquier.position_selectionnee = None
                     self.estSauvegarde = False
@@ -244,8 +252,7 @@ class Fenetre(Tk):
 
             except (ErreurDeplacement, AucunePieceAPosition, MauvaiseCouleurPiece) as e:
                 self.canvas_echiquier.position_selectionnee = None
-                self.lblMessages['foreground'] = "red"
-                self.lblMessages['text'] = e
+                messagebox.showwarning("Erreur", e)
                 self.canvas_echiquier.position_selectionne = None
             finally:
                 self.canvas_echiquier.raffraichir()
@@ -263,7 +270,7 @@ class Fenetre(Tk):
                                     'Voulez-vous rejouer de nouveau?'):
                 self.menubar.nouvelle_partie()
 
-    def piecesprises(self,piece):
+    def piecesprises(self, piece):
         if self.partie.joueur_actif == "blanc":
             self.listepiecesnoirs.append(piece)
             self.lblpiecesnoires.config(text='Pièces noires perdues: ' + (" ".join(map(str,self.listepiecesnoirs))))
