@@ -157,7 +157,7 @@ class Fenetre(Tk):
         self.listemovements = []
         self.listepiecesnoirs = []
         self.listepiecesblanches = []
-
+        self.chrono_actif = False
 
 
 
@@ -226,25 +226,27 @@ class Fenetre(Tk):
         self.second = 0
         self.color_chrono = "blue"
 
-
     def update_clock(self):
+        if self.chrono_actif:
+            self.second += 1
+            if self.second == 60:
+                self.second = 0
+                self.minute += 1
+            elif self.minute == 1 and self.second == 30:
+                self.color_chrono = "red"
+            elif self.minute == 2:
+                    self.second = 0
+                    self.minute = 0
+                    self.partie.joueur_suivant()
 
         now = f'Chrono: {self.minute} m : {self.second} s'
-        self.second += 1
-        if self.second == 60:
-            self.second = 0
-            self.minute += 1
-        elif self.minute == 1 and self.second == 30:
-            self.color_chrono = "red"
-        elif self.minute == 2 :
-                self.second = 0
-                self.minute = 0
-                self.partie.joueur_suivant()
-
-
         self.chrono.configure(text=now, fg=self.color_chrono)
         self.canvas_echiquier.after(1000, self.update_clock)
 
+    def stop_clock(self):
+        self.canvas_echiquier.after_cancel(self.update_clock)
+        self.second = 0
+        self.chrono_actif = False
 
     def selectionner(self, event):
         # On trouve le numéro de ligne/colonne en divisant les positions en y/x par le nombre de pixels par case.
@@ -310,7 +312,6 @@ class Fenetre(Tk):
             finally:
                 self.canvas_echiquier.raffraichir()
 
-
             if self.partie.joueur_actif == 'blanc':
                 self.lblMessagejoueuractif['foreground'] = 'black'
                 self.lblMessagejoueuractif['text'] = 'Tour du joueur blanc'
@@ -328,14 +329,11 @@ class Fenetre(Tk):
     def piecesprises(self, piece):
         if self.partie.joueur_actif == "blanc":
             self.listepiecesnoirs.append(piece)
-            self.lblpiecesnoires.config(text='Pièces blanches perdues: ' + (" ".join(map(str,self.listepiecesnoirs))))
 
         elif self.partie.joueur_actif == "noir":
             self.listepiecesblanches.append(piece)
-            self.lblpiecesblanches.config(text='Pièces noires perdues: ' + (" ".join(map(str, self.listepiecesblanches))))
 
-        for x in self.listepiecesnoirs:
-            print(x)
+
 
     def demandesauvegarde(self):
         if not self.estSauvegarde:
@@ -358,6 +356,9 @@ class Fenetre(Tk):
             self.txtListe.insert(END, "La partie est terminée. Le joueur  " + self.partie.determiner_gagnant()
                                  + ' a gagné! =)')
 
+        self.lblpiecesblanches.config(text='Pièces noires perdues: ' + (" ".join(map(str, self.listepiecesblanches))))
+        self.lblpiecesnoires.config(text='Pièces blanches perdues: ' + (" ".join(map(str, self.listepiecesnoirs))))
+
 
 class BarreMenu(Menu):
     def __init__(self, parent, canvas_echiquier):
@@ -378,6 +379,7 @@ class BarreMenu(Menu):
         menuoptions = Menu(self, tearoff=0)
         menuoptions.add_command(label="Couleur", command=self.changertheme)
         menuoptions.add_command(label="Partir le chrono", command=self.partir_chrono)
+        menuoptions.add_command(label="Arrêter le chrono", command=self.arreter_chrono)
         self.add_cascade(label="Options", menu=menuoptions)
 
         menuaide = Menu(self, tearoff=0)
@@ -385,7 +387,12 @@ class BarreMenu(Menu):
         self.add_cascade(label="Aide", menu=menuaide)
 
     def partir_chrono(self):
-        self.parent.update_clock()
+        if not self.parent.chrono_actif:
+            self.parent.chrono_actif = True
+            self.parent.update_clock()
+
+    def arreter_chrono(self):
+        self.parent.stop_clock()
 
     def sauvegarder(self):
 
@@ -396,6 +403,8 @@ class BarreMenu(Menu):
 
                 pickle.dump(self.canvas_echiquier.partie.echiquier.dictionnaire_pieces, sauvegarde)
                 pickle.dump(self.parent.listemovements, sauvegarde)
+                pickle.dump(self.parent.listepiecesblanches, sauvegarde)
+                pickle.dump(self.parent.listepiecesnoirs, sauvegarde)
                 self.parent.estSauvegarde = True
                 messagebox.showinfo("Sauvegarde", "Sauvegarde Completée")
 
@@ -410,6 +419,8 @@ class BarreMenu(Menu):
 
                 self.canvas_echiquier.partie.echiquier.dictionnaire_pieces = pickle.load(charger)
                 self.parent.listemovements = pickle.load(charger)
+                self.parent.listepiecesblanches = pickle.load(charger)
+                self.parent.listepiecesnoirs = pickle.load(charger)
                 self.canvas_echiquier.raffraichir()
                 messagebox.showinfo("Chargement", "Chargement Completé")
 
@@ -427,6 +438,12 @@ class BarreMenu(Menu):
         self.canvas_echiquier.raffraichir()
         self.parent.lblMessages['text'] = " "
         self.parent.lblMessagejoueuractif['text'] = " "
+        self.parent.listepiecesnoirs = []
+        self.parent.listepiecesblanches = []
+        self.parent.lblpiecesblanches['text'] = 'Pièces noires perdues: '
+        self.parent.lblpiecesnoires['text'] = 'Pièces blanches perdues: '
+        self.parent.minute = 0
+        self.parent.second = 0
 
     def afficher_tutoriel(self):
         if self.canvas_echiquier.tutoriel == True:
