@@ -237,9 +237,10 @@ class Fou(Piece):
 
         # Par contre, il ne peut pas faire de sur-place.
         if colonne_source == colonne_cible and rangee_source == rangee_cible:
-            return False
 
+            return False
         return True
+
 
     def __repr__(self):
         if self.est_blanc():

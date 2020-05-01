@@ -77,7 +77,7 @@ class Partie:
     def deplacer(self, position_source, position_cible):
 
         piece = self.echiquier.recuperer_piece_a_position(position_source)
-        print(piece)
+        print("la piece est", piece)
 
         if piece is None:
 
@@ -87,6 +87,7 @@ class Partie:
 
         self.echiquier.deplacer(position_source, position_cible)
         self.joueur_suivant()
+
 
     def joueur_suivant(self):
         """Change le joueur actif: passe de blanc à noir, ou de noir à blanc, selon la couleur du joueur actif.
