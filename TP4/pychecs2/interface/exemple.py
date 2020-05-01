@@ -405,6 +405,7 @@ class BarreMenu(Menu):
                 pickle.dump(self.parent.listemovements, sauvegarde)
                 pickle.dump(self.parent.listepiecesblanches, sauvegarde)
                 pickle.dump(self.parent.listepiecesnoirs, sauvegarde)
+                pickle.dump(self.canvas_echiquier.partie.joueur_actif, sauvegarde)
                 self.parent.estSauvegarde = True
                 messagebox.showinfo("Sauvegarde", "Sauvegarde Completée")
 
@@ -421,6 +422,7 @@ class BarreMenu(Menu):
                 self.parent.listemovements = pickle.load(charger)
                 self.parent.listepiecesblanches = pickle.load(charger)
                 self.parent.listepiecesnoirs = pickle.load(charger)
+                self.canvas_echiquier.partie.joueur_actif = pickle.load(charger)
                 self.canvas_echiquier.raffraichir()
                 messagebox.showinfo("Chargement", "Chargement Completé")
 
